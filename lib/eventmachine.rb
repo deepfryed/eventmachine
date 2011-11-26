@@ -529,6 +529,21 @@ module EventMachine
   end
 
 
+  # Attaches an existing server socket to eventmachine
+  #
+  # server = TCPServer.new('127.0.0.1', 3000)
+  # 2.times do
+  #   fork {EM.run { EM.attach_server_socket(server, Handler) }}
+  # end
+  #
+  # @see Eventmachine.start_server
+  def self.attach_server_socket server, handler, *args, &block
+    klass   = klass_from_handler(Connection, handler, *args)
+    binding = attach_server(server)
+    @acceptors[binding] = [klass,args,block]
+    binding
+  end
+
   # Stop a TCP server socket that was started with {EventMachine.start_server}.
   # @see EventMachine.start_server
   def self.stop_server signature
