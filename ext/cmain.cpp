@@ -263,6 +263,17 @@ extern "C" int evma_num_close_scheduled ()
 }
 
 /**********************
+evma_attach_server
+**********************/
+
+extern "C" const unsigned long evma_attach_server (int fd)
+{
+	ensure_eventmachine("evma_attach_server");
+	return EventMachine->AttachServer(fd);
+}
+
+
+/**********************
 evma_create_tcp_server
 **********************/
 

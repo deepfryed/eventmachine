@@ -237,6 +237,18 @@ static VALUE t_add_oneshot_timer (VALUE self, VALUE interval)
 	return ULONG2NUM (f);
 }
 
+/**************
+t_attach_server
+**************/
+
+static VALUE t_attach_server (VALUE self, VALUE fd)
+{
+	const unsigned long f = evma_attach_server (FIX2INT(fd));
+	if (!f)
+		rb_raise (rb_eRuntimeError, "no acceptor (port is in use or requires root privileges)");
+	return ULONG2NUM (f);
+}
+
 
 /**************
 t_start_server
@@ -1163,6 +1175,7 @@ extern "C" void Init_rubyeventmachine()
 	rb_define_module_function (EmModule, "run_machine", (VALUE(*)(...))t_run_machine_without_threads, 0);
 	rb_define_module_function (EmModule, "run_machine_without_threads", (VALUE(*)(...))t_run_machine_without_threads, 0);
 	rb_define_module_function (EmModule, "add_oneshot_timer", (VALUE(*)(...))t_add_oneshot_timer, 1);
+	rb_define_module_function (EmModule, "attach_server", (VALUE(*)(...))t_attach_server, 1);
 	rb_define_module_function (EmModule, "start_tcp_server", (VALUE(*)(...))t_start_server, 2);
 	rb_define_module_function (EmModule, "stop_tcp_server", (VALUE(*)(...))t_stop_server, 1);
 	rb_define_module_function (EmModule, "start_unix_server", (VALUE(*)(...))t_start_unix_server, 1);

@@ -62,6 +62,7 @@ extern "C" {
     int evma_num_close_scheduled();
 
 	void evma_stop_tcp_server (const unsigned long signature);
+	const unsigned long evma_attach_server (int fd);
 	const unsigned long evma_create_tcp_server (const char *address, int port);
 	const unsigned long evma_create_unix_domain_server (const char *filename);
 	const unsigned long evma_open_datagram_socket (const char *server, int port);

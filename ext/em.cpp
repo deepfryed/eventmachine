@@ -673,7 +673,7 @@ EventMachine_t::_TimeTilNextEvent
 
 timeval EventMachine_t::_TimeTilNextEvent()
 {
-	// 29jul11: Changed calculation base from MyCurrentLoopTime to the 
+	// 29jul11: Changed calculation base from MyCurrentLoopTime to the
 	// real time. As MyCurrentLoopTime is set at the beginning of an
 	// iteration and this calculation is done at the end, evenmachine
 	// will potentially oversleep by the amount of time the iteration
@@ -1490,6 +1490,49 @@ struct sockaddr *name2address (const char *server, int port, int *family, int *b
 	}
 
 	return NULL;
+}
+
+/*******************************
+EventMachine_t::AttachServer
+*******************************/
+
+const unsigned long EventMachine_t::AttachServer (int sd_accept)
+{
+	/* Create a server from the given descriptor and add it to the event machine.
+	 * Return the binding of the new acceptor to the caller.
+	 * This binding will be referenced when the new acceptor sends events
+	 * to indicate accepted connections.
+	 */
+	unsigned long output_binding = 0;
+
+	if (sd_accept == INVALID_SOCKET) {
+		goto fail;
+	}
+
+	{
+		// Set the acceptor non-blocking.
+		// THIS IS CRUCIALLY IMPORTANT because we read it in a select loop.
+		if (!SetSocketNonblocking (sd_accept)) {
+		//int val = fcntl (sd_accept, F_GETFL, 0);
+		//if (fcntl (sd_accept, F_SETFL, val | O_NONBLOCK) == -1) {
+			goto fail;
+		}
+	}
+
+	{ // Looking good.
+		AcceptorDescriptor *ad = new AcceptorDescriptor (sd_accept, this);
+		if (!ad)
+			throw std::runtime_error ("unable to allocate acceptor");
+		Add (ad);
+		output_binding = ad->GetBinding();
+	}
+
+	return output_binding;
+
+	fail:
+	if (sd_accept != INVALID_SOCKET)
+		close (sd_accept);
+	return 0;
 }
 
 

@@ -104,6 +104,12 @@ module EventMachine
     end
 
     # @private
+    def attach_server fileno
+      s = EvmaTCPServer.new(fileno) or raise "no acceptor"
+      s.uuid
+    end
+
+    # @private
     def stop_tcp_server sig
       s = Reactor.instance.get_selectable(sig)
       s.schedule_close
