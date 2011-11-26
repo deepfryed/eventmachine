@@ -539,7 +539,7 @@ module EventMachine
   # @see Eventmachine.start_server
   def self.attach_server_socket server, handler, *args, &block
     klass   = klass_from_handler(Connection, handler, *args)
-    binding = attach_server(server)
+    binding = attach_server(server.respond_to?(:fileno) ? server.fileno : server.to_i)
     @acceptors[binding] = [klass,args,block]
     binding
   end
