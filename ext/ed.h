@@ -79,6 +79,7 @@ class EventableDescriptor: public Bindable_t
 		virtual int SetCommInactivityTimeout (uint64_t value) {return 0;}
 		uint64_t GetPendingConnectTimeout();
 		int SetPendingConnectTimeout (uint64_t value);
+		uint64_t GetLastActivity() { return LastActivity; }
 
 		#ifdef HAVE_EPOLL
 		struct epoll_event *GetEpollEvent() { return &EpollEvent; }
@@ -86,6 +87,7 @@ class EventableDescriptor: public Bindable_t
 
 		virtual void StartProxy(const unsigned long, const unsigned long, const unsigned long);
 		virtual void StopProxy();
+		virtual unsigned long GetProxiedBytes(){ return ProxiedBytes; };
 		virtual void SetProxiedFrom(EventableDescriptor*, const unsigned long);
 		virtual int SendOutboundData(const char*,int){ return -1; }
 		virtual bool IsPaused(){ return bPaused; }
@@ -116,6 +118,7 @@ class EventableDescriptor: public Bindable_t
 		unsigned long BytesToProxy;
 		EventableDescriptor *ProxyTarget;
 		EventableDescriptor *ProxiedFrom;
+		unsigned long ProxiedBytes;
 
 		unsigned long MaxOutboundBufSize;
 

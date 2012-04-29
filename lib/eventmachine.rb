@@ -82,7 +82,8 @@ module EventMachine
   @reactor_running = false
   @next_tick_queue = []
   @tails = []
-  @threadpool = nil
+  @threadpool = @threadqueue = @resultqueue = nil
+  @all_threads_spawned = false
 
   # System errnos
   # @private
@@ -208,6 +209,7 @@ module EventMachine
             @threadqueue = nil
             @resultqueue = nil
             @threadpool = nil
+            @all_threads_spawned = false
           end
 
           @next_tick_queue = []
@@ -1029,7 +1031,6 @@ module EventMachine
     # has no constructor.
 
     unless @threadpool
-      require 'thread'
       @threadpool = []
       @threadqueue = ::Queue.new
       @resultqueue = ::Queue.new
@@ -1054,6 +1055,19 @@ module EventMachine
       end
       @threadpool << thread
     end
+    @all_threads_spawned = true
+  end
+
+  ##
+  # Returns +true+ if all deferred actions are done executing and their
+  # callbacks have been fired.
+  #
+  def self.defers_finished?
+    return false if @threadpool and !@all_threads_spawned
+    return false if @threadqueue and not @threadqueue.empty?
+    return false if @resultqueue and not @resultqueue.empty?
+    return false if @threadpool and @threadqueue.num_waiting != @threadpool.size
+    return true
   end
 
   class << self
@@ -1429,7 +1443,7 @@ module EventMachine
     if opcode == ConnectionUnbound
       if c = @conns.delete( conn_binding )
         begin
-          if c.original_method(:unbind).arity == 1
+          if c.original_method(:unbind).arity != 0
             c.unbind(data == 0 ? nil : EventMachine::ERRNOS[data])
           else
             c.unbind
