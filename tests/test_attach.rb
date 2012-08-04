@@ -56,6 +56,16 @@ class TestAttach < Test::Unit::TestCase
     assert_equal socket.readline, "def\n"
   end
 
+  def test_attach_server
+    server = TCPServer.new '127.0.0.1', @port
+    EM.run {
+      EM.attach_server_socket server, EchoServer
+      socket = TCPSocket.new "127.0.0.1", @port
+      EM.watch socket, EchoClient, socket
+    }
+    assert_equal $read, "abc\n"
+  end
+
   module PipeWatch
     def notify_readable
       $read = $r.readline
