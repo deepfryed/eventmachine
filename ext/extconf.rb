@@ -40,7 +40,8 @@ def manual_ssl_config
 end
 
 if ENV['CROSS_COMPILING']
-  openssl_dir = File.expand_path("~/.rake-compiler/builds/openssl-1.0.0a/")
+  openssl_version = ENV.fetch("OPENSSL_VERSION", "1.0.0j")
+  openssl_dir = File.expand_path("~/.rake-compiler/builds/openssl-#{openssl_version}/")
   if File.exists?(openssl_dir)
     FileUtils.mkdir_p Dir.pwd+"/openssl/"
     FileUtils.cp Dir[openssl_dir+"/include/openssl/*.h"], Dir.pwd+"/openssl/", :verbose => true
@@ -85,6 +86,15 @@ else
   add_define 'OS_UNIX'
 
   add_define "HAVE_KQUEUE" if have_header("sys/event.h") and have_header("sys/queue.h")
+end
+
+# Adjust number of file descriptors (FD) on Windows
+
+if RbConfig::CONFIG["host_os"] =~ /mingw/
+  found = RbConfig::CONFIG.values_at("CFLAGS", "CPPFLAGS").
+    any? { |v| v.include?("FD_SETSIZE") }
+
+  add_define "FD_SETSIZE=32767" unless found
 end
 
 # Main platform invariances:
