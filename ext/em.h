@@ -24,9 +24,13 @@ See the file COPYING for complete licensing information.
   #include <ruby.h>
   #define EmSelect rb_thread_select
 
+  #ifdef HAVE_RB_WAIT_FOR_SINGLE_FD
+    #include <ruby/io.h>
+  #endif
+
   #if defined(HAVE_RBTRAP)
     #include <rubysig.h>
-  #elif defined(HAVE_RB_THREAD_CHECK_INTS)
+  #elif defined(HAVE_RB_ENABLE_INTERRUPT)
     extern "C" {
       void rb_enable_interrupt(void);
       void rb_disable_interrupt(void);
@@ -142,7 +146,7 @@ class EventMachine_t
 		uint64_t GetRealTime();
 
 	private:
-		bool _RunOnce();
+		void _RunOnce();
 		void _RunTimers();
 		void _UpdateTime();
 		void _AddNewDescriptors();
@@ -150,9 +154,9 @@ class EventMachine_t
 		void _InitializeLoopBreaker();
 		void _CleanupSockets();
 
-		bool _RunSelectOnce();
-		bool _RunEpollOnce();
-		bool _RunKqueueOnce();
+		void _RunSelectOnce();
+		void _RunEpollOnce();
+		void _RunKqueueOnce();
 
 		void _ModifyEpollEvent (EventableDescriptor*);
 		void _DispatchHeartbeats();
